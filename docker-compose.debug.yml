@@ -1,0 +1,34 @@
+version: '3.4'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    depends_on:
+      - web
+  web:
+    image: youtubeenglishdrf
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command:
+      [
+        "sh",
+        "-c",
+        "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000 --nothreading --noreload"
+      ]
+    env_file:
+      - ./.env.dev
+    ports:
+      - 8000:8000
+      - 5678:5678
+    depends_on:
+      - db
+  db:
+    image: postgres:15
+    volumes:
+      - ./db/data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=app
+      - POSTGRES_PASSWORD=app
