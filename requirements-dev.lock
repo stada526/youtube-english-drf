@@ -21,6 +21,10 @@ django-cors-headers==4.4.0
     # via youtube-english-drf
 djangorestframework==3.15.2
     # via youtube-english-drf
+gunicorn==22.0.0
+    # via youtube-english-drf
+packaging==24.1
+    # via gunicorn
 psycopg2-binary==2.9.9
     # via youtube-english-drf
 sqlparse==0.5.0
