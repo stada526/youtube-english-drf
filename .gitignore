@@ -11,3 +11,5 @@ wheels/
 
 #
 db/data
+.env.prod
+.env.prod.db
