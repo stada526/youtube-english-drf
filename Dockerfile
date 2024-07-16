@@ -15,7 +15,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install curl
 RUN apt-get update && \
-    apt-get install -y curl
+    apt-get install -y curl netcat-traditional
 
 # Install rye
 ENV RYE_HOME="/opt/rye"
@@ -28,6 +28,7 @@ COPY ./.python-version ./pyproject.toml ./requirements* ./
 RUN rye pin "$(cat .python-version)" && \
     rye sync
 
+# Copy project
 COPY . /app
 
 # # Creates a non-root user with an explicit UID and adds permission to access the /app folder
@@ -37,5 +38,8 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
     chown -R appuser ${RYE_HOME}
 USER appuser
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi"]
+RUN chmod +x /app/entrypoint.sh
+
+# run entrypoint.sh
+ENTRYPOINT ["/app/entrypoint.sh"]
+
