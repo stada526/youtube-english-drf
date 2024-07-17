@@ -1,0 +1,37 @@
+name: Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GitHub Container Registry
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t ghcr.io/${GITHUB_ACTOR}/youtube-english-drf:latest --platform linux/x86_64 .
+
+      - name: Push Docker Image
+        run: docker push ghcr.io/${GITHUB_ACTOR}/youtube-english-drf:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd /home/ubuntu/youtube-english-drf
+            docker-compose stop app
+            docker-compose rm -f app
+            docker image rm ghcr.io/stada526/youtube-english-drf:latest
+            docker pull ghcr.io/stada526/youtube-english-drf:latest
+            docker-compose up -d app
